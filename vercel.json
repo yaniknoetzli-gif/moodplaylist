@@ -4,32 +4,20 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "*.js",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/App.js",
-      "dest": "/App.js"
+      "src": "/api/(.*)",
+      "dest": "/server.js"
     },
     {
-      "src": "/config.js",
-      "dest": "/config.js"
-    },
-    {
-      "src": "/index.html",
-      "dest": "/index.html"
+      "src": "/callback",
+      "dest": "/server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/server.js"
+      "dest": "/index.html"
     }
   ]
 }

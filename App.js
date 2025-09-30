@@ -29,6 +29,7 @@ class MoodPlaylistApp {
     this.attachEventListeners();
     this.attachDirectListeners();
     this.checkForAuthCode();
+    this.checkServerStatus();
   }
   
   attachDirectListeners() {
@@ -342,7 +343,7 @@ class MoodPlaylistApp {
       setTimeout(() => {
         this.showMessage = null;
         this.render();
-      }, 2000);
+      }, 5000);
       return;
     }
     
@@ -361,7 +362,24 @@ class MoodPlaylistApp {
     this.render();
     
     // Open Spotify authentication in a new tab
-    window.open(authUrl, '_blank');
+    const authWindow = window.open(authUrl, '_blank', 'width=500,height=600,scrollbars=yes,resizable=yes');
+    
+    // Check if the window was blocked
+    if (!authWindow || authWindow.closed || typeof authWindow.closed == 'undefined') {
+      this.showMessage = '❌ Popup blocked! Please allow popups for this site and try again.';
+      this.render();
+      return;
+    }
+    
+    // Monitor the auth window
+    this.authWindowInterval = setInterval(() => {
+      if (authWindow.closed) {
+        clearInterval(this.authWindowInterval);
+        this.authWindowInterval = null;
+        this.isLoading = false;
+        this.render();
+      }
+    }, 1000);
   }
   
   async generatePlaylist() {
@@ -400,8 +418,12 @@ class MoodPlaylistApp {
       this.isLoading = false;
       this.showMessage = `❌ Failed to create playlist: ${error.message}\n\nPlease try again or check your Spotify connection.`;
       this.render();
+      
+      // Don't auto-hide error messages - let user see them
+      return; // Exit early for errors
     }
     
+    // Only auto-hide success messages
     setTimeout(() => {
       this.showMessage = null;
       this.render();
@@ -410,6 +432,13 @@ class MoodPlaylistApp {
   
   async createRealPlaylist(mood) {
     try {
+      console.log('Creating playlist with:', {
+        baseURL: CONFIG.API.BASE_URL,
+        endpoint: CONFIG.API.ENDPOINTS.CREATE_PLAYLIST,
+        mood: mood.name,
+        hasToken: !!this.accessToken
+      });
+
       const response = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.CREATE_PLAYLIST}`, {
         method: 'POST',
         headers: {
@@ -422,17 +451,37 @@ class MoodPlaylistApp {
         })
       });
 
+      console.log('Response status:', response.status, response.statusText);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create playlist');
+        let errorMessage = 'Failed to create playlist';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || errorMessage;
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError);
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
+      console.log('Playlist created successfully:', result);
       return result.playlist;
       
     } catch (error) {
       console.error('Playlist creation error:', error);
-      throw error;
+      
+      // Provide more specific error messages
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Server connection failed. Please make sure the server is running:\n\n1. Open terminal\n2. Run: cd /Users/yaniknoetzli/Desktop/MoodPlaylist_Final && node server.js\n3. Refresh this page');
+      } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+        throw new Error('Authentication expired. Please reconnect to Spotify.');
+      } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
+        throw new Error('Permission denied. Please check your Spotify permissions.');
+      } else {
+        throw error;
+      }
     }
   }
   
@@ -487,15 +536,20 @@ class MoodPlaylistApp {
     // Listen for Spotify auth success
     window.addEventListener('message', (e) => {
       try {
+        console.log('Received message:', e.data);
         if (e.data && e.data.type === 'SPOTIFY_AUTH_SUCCESS') {
           if (e.data.tokenData) {
+            console.log('Handling token data:', e.data.tokenData);
             this.handleSpotifyTokenData(e.data.tokenData);
           } else if (e.data.code) {
+            console.log('Handling auth code:', e.data.code);
             this.handleSpotifyCallback(e.data.code);
           }
         }
       } catch (error) {
         console.error('Message handler error:', error);
+        this.showMessage = `❌ Authentication error: ${error.message}`;
+        this.render();
       }
     });
   }
@@ -640,12 +694,23 @@ class MoodPlaylistApp {
     this.render();
     
     // Open Spotify authentication in a new tab
-    window.open(authUrl, '_blank');
+    const authWindow = window.open(authUrl, '_blank', 'width=500,height=600,scrollbars=yes,resizable=yes');
     
-    // Reset loading state after a short delay
-    setTimeout(() => {
-      this.isLoading = false;
+    // Check if the window was blocked
+    if (!authWindow || authWindow.closed || typeof authWindow.closed == 'undefined') {
+      this.showMessage = '❌ Popup blocked! Please allow popups for this site and try again.';
       this.render();
+      return;
+    }
+    
+    // Monitor the auth window
+    this.authWindowInterval = setInterval(() => {
+      if (authWindow.closed) {
+        clearInterval(this.authWindowInterval);
+        this.authWindowInterval = null;
+        this.isLoading = false;
+        this.render();
+      }
     }, 1000);
   }
   
@@ -692,11 +757,14 @@ class MoodPlaylistApp {
       this.isSpotifyConnected = true;
       
       // Get user profile
+      console.log('Fetching user profile from:', `${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.USER_PROFILE}`);
       const profileResponse = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.USER_PROFILE}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accessToken: this.accessToken })
       });
+      
+      console.log('Profile response status:', profileResponse.status);
       
       if (profileResponse.ok) {
         const profileData = await profileResponse.json();
@@ -705,6 +773,9 @@ class MoodPlaylistApp {
       
       this.showMessage = '✅ Successfully connected to Spotify!\n\nYou can now select a mood and generate your playlist.';
       this.render();
+      
+      // Clear any lingering authentication windows
+      this.clearAuthWindows();
       
       setTimeout(() => {
         this.showMessage = null;
@@ -720,6 +791,34 @@ class MoodPlaylistApp {
         this.showMessage = null;
         this.render();
       }, 5000);
+    }
+  }
+  
+  clearAuthWindows() {
+    // Clear any intervals that might be monitoring auth windows
+    if (this.authWindowInterval) {
+      clearInterval(this.authWindowInterval);
+      this.authWindowInterval = null;
+    }
+  }
+  
+  async checkServerStatus() {
+    try {
+      const response = await fetch(`${CONFIG.API.BASE_URL}/api/user-profile`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: 'test' })
+      });
+      
+      if (response.ok || response.status === 400) {
+        console.log('✅ Server is running and accessible');
+        return true;
+      }
+    } catch (error) {
+      console.error('❌ Server is not running:', error);
+      this.showMessage = '⚠️ Server not running!\n\nTo fix this:\n1. Open terminal\n2. Run: cd /Users/yaniknoetzli/Desktop/MoodPlaylist_Final && node server.js\n3. Refresh this page';
+      this.render();
+      return false;
     }
   }
   

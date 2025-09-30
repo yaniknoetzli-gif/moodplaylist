@@ -11,10 +11,23 @@ const PORT = process.env.PORT || 3002;
 const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
 const baseURL = isProduction ? 'https://moodplaylist.app' : 'http://127.0.0.1:3002';
 
+console.log('Environment:', {
+  isProduction,
+  baseURL,
+  VERCEL: process.env.VERCEL,
+  NODE_ENV: process.env.NODE_ENV
+});
+
 // Spotify API Configuration
 const SPOTIFY_CLIENT_ID = CONFIG.SPOTIFY.CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || CONFIG.SPOTIFY.CLIENT_SECRET;
 const SPOTIFY_REDIRECT_URI = `${baseURL}/callback`;
+
+console.log('Spotify Config:', {
+  CLIENT_ID: SPOTIFY_CLIENT_ID,
+  HAS_SECRET: !!SPOTIFY_CLIENT_SECRET,
+  REDIRECT_URI: SPOTIFY_REDIRECT_URI
+});
 
 // Middleware - Enhanced CORS for production
 app.use(cors({
@@ -369,16 +382,33 @@ app.post('/api/feedback', async (req, res) => {
   }
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    environment: process.env.NODE_ENV,
+    vercel: !!process.env.VERCEL,
+    baseURL: baseURL,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Serve the main app
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`🎵 MoodPlaylist Server running on http://localhost:${PORT}`);
-  console.log('📱 Open this URL in your browser to use the app!');
-  console.log('🚀 App loads instantly - no more waiting!');
-  console.log('🔧 Real Spotify integration ready!');
-  console.log('📬 Feedback will be logged to console');
-  console.log(`📧 Remember to check logs for user feedback!`);
-});
+// For Vercel serverless functions
+module.exports = app;
+
+// Only start server when running locally
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`🎵 MoodPlaylist Server running on http://localhost:${PORT}`);
+    console.log('📱 Open this URL in your browser to use the app!');
+    console.log('🚀 App loads instantly - no more waiting!');
+    console.log('🔧 Real Spotify integration ready!');
+    console.log('📬 Feedback will be logged to console');
+    console.log(`📧 Remember to check logs for user feedback!`);
+  });
+}
