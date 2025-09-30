@@ -1,0 +1,57 @@
+<svg width="400" height="120" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="socialGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1DB954;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1ed760;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Mood color gradients -->
+    <linearGradient id="happyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="sadGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4169E1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E90FF;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="energeticGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF4500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF6347;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="calmGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#98FB98;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#90EE90;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="120" rx="20" fill="url(#socialGradient)"/>
+  
+  <!-- Large music note icon -->
+  <g transform="translate(30, 30)">
+    <!-- Note head -->
+    <ellipse cx="25" cy="35" rx="15" ry="10" fill="white"/>
+    
+    <!-- Note stem -->
+    <rect x="38" y="10" width="6" height="40" fill="white"/>
+    
+    <!-- Note flag -->
+    <path d="M44 10 Q60 15 50 30 Q44 25 44 10" fill="white"/>
+  </g>
+  
+  <!-- Mood indicators -->
+  <circle cx="100" cy="40" r="8" fill="url(#happyGradient)"/>
+  <circle cx="115" cy="50" r="6" fill="url(#sadGradient)"/>
+  <circle cx="110" cy="70" r="6" fill="url(#energeticGradient)"/>
+  <circle cx="95" cy="80" r="5" fill="url(#calmGradient)"/>
+  
+  <!-- App name -->
+  <text x="150" y="50" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="white">Mood</text>
+  <text x="150" y="85" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="white">Playlist</text>
+  
+  <!-- Subtitle -->
+  <text x="150" y="105" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.9)">AI-Powered Music Discovery</text>
+</svg>
