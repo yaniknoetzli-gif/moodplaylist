@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoodPlaylist - AI-Powered Music Discovery</title>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID', {
+            page_title: 'MoodPlaylist - AI-Powered Music Discovery',
+            page_location: window.location.href
+        });
+    </script>
+    
     <style>
         body {
             margin: 0;
@@ -481,6 +494,28 @@
             }
         };
 
+        // Google Analytics Helper Functions
+        function trackEvent(eventName, eventCategory, eventLabel = null, eventValue = null) {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', eventName, {
+                    event_category: eventCategory,
+                    event_label: eventLabel,
+                    value: eventValue
+                });
+                console.log('📊 Analytics Event:', eventName, eventCategory, eventLabel);
+            }
+        }
+
+        function trackPageView(pageName) {
+            if (typeof gtag !== 'undefined') {
+                gtag('config', 'GA_MEASUREMENT_ID', {
+                    page_title: pageName,
+                    page_location: window.location.href
+                });
+                console.log('📊 Page View:', pageName);
+            }
+        }
+
         // MoodPlaylist - Vanilla JavaScript Version for Fast Loading
         class MoodPlaylistApp {
             constructor() {
@@ -508,6 +543,10 @@
             }
             
             init() {
+                // Track app initialization
+                trackPageView('MoodPlaylist Home');
+                trackEvent('app_loaded', 'engagement', 'app_startup');
+                
                 this.render();
                 this.attachEventListeners();
                 this.attachDirectListeners();
@@ -830,6 +869,11 @@
             
             selectMood(moodName) {
                 this.selectedMood = this.moods.find(m => m.name === moodName);
+                
+                // Track mood selection
+                trackEvent('mood_selected', 'user_interaction', moodName);
+                console.log('📊 User selected mood:', moodName);
+                
                 this.render();
             }
             
@@ -933,6 +977,9 @@
             }
             
             async connectSpotify() {
+                // Track Spotify connection attempt
+                trackEvent('spotify_connect_clicked', 'user_interaction', 'spotify_auth');
+                
                 if (this.accessToken) {
                     this.showMessage = '✅ Already connected to Spotify!';
                     this.render();
@@ -1017,6 +1064,10 @@
                     this.accessToken = tokenData.access_token;
                     this.isSpotifyConnected = true;
                     
+                    // Track successful Spotify connection
+                    trackEvent('spotify_connected', 'user_interaction', 'spotify_auth_success');
+                    console.log('📊 Spotify connected successfully');
+                    
                     console.log('Fetching user profile from:', `${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.USER_PROFILE}`);
                     const profileResponse = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.USER_PROFILE}`, {
                         method: 'POST',
@@ -1081,6 +1132,9 @@
             }
             
             async generatePlaylist() {
+                // Track playlist generation attempt
+                trackEvent('playlist_generate_clicked', 'user_interaction', this.selectedMood?.name || 'no_mood');
+                
                 if (!this.selectedMood) {
                     this.showMessage = 'Please select a mood first!';
                     this.render();
@@ -1109,6 +1163,11 @@
                     const playlistData = await this.createRealPlaylist(this.selectedMood);
                     this.createdPlaylist = playlistData;
                     this.isLoading = false;
+                    
+                    // Track successful playlist creation
+                    trackEvent('playlist_created', 'user_interaction', this.selectedMood.name, playlistData.trackCount);
+                    console.log('📊 Playlist created successfully:', this.selectedMood.name, playlistData.trackCount, 'tracks');
+                    
                     this.showMessage = `🎵 Your ${this.selectedMood.name} playlist is ready!\n\n✅ Created: "${playlistData.name}"\n• ${playlistData.trackCount} tracks added\n• Saved to your Spotify account\n• Open Spotify to listen!`;
                     this.render();
                 } catch (error) {
@@ -1186,6 +1245,10 @@
                     alert('Please enter some feedback before sending!');
                     return;
                 }
+                
+                // Track feedback submission
+                trackEvent('feedback_submitted', 'user_interaction', 'user_feedback');
+                console.log('📊 User submitted feedback');
                 
                 try {
                     const response = await fetch(`${CONFIG.API.BASE_URL}/api/feedback`, {
