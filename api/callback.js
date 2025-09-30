@@ -2,7 +2,12 @@ const https = require('https');
 
 // Spotify API Configuration
 const SPOTIFY_CLIENT_ID = '1517cc34e8c34f298cb332bb9005f245';
-const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || 'your_spotify_client_secret_here';
+const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+
+if (!SPOTIFY_CLIENT_SECRET) {
+  console.error('❌ SPOTIFY_CLIENT_SECRET environment variable is not set!');
+  console.error('Please set SPOTIFY_CLIENT_SECRET in your Vercel dashboard');
+}
 
 // Function to exchange authorization code for access token
 async function exchangeCodeForToken(code) {
@@ -90,6 +95,10 @@ export default async function handler(req, res) {
   
   if (code) {
     try {
+      if (!SPOTIFY_CLIENT_SECRET) {
+        throw new Error('Spotify Client Secret not configured. Please set SPOTIFY_CLIENT_SECRET in Vercel environment variables.');
+      }
+      
       // Exchange code for access token
       const tokenData = await exchangeCodeForToken(code);
       
@@ -123,11 +132,11 @@ export default async function handler(req, res) {
           <body>
             <h2>❌ Authentication Failed</h2>
             <p>Error: ${error.message}</p>
-            <p>Please try again.</p>
+            <p>Please check the server logs for more details.</p>
             <script>
               setTimeout(() => {
                 window.close();
-              }, 3000);
+              }, 5000);
             </script>
           </body>
         </html>
