@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoodPlaylist - AI-Powered Music Discovery</title>
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-    
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-268N7SZJTZ"></script>
     <script>
@@ -55,16 +51,6 @@
             margin-bottom: 30px;
         }
         
-        .logo-container {
-            margin-bottom: 15px;
-        }
-        
-        .logo {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
         
         .title {
             font-size: 32px;
@@ -692,10 +678,7 @@
                 document.getElementById('root').innerHTML = `
                     <div class="container">
                         <div class="header">
-                            <div class="logo-container">
-                                <img src="assets/logo-simple.svg" alt="MoodPlaylist Logo" class="logo">
-                            </div>
-                            <h1 class="title">MoodPlaylist</h1>
+                            <h1 class="title">🎵 MoodPlaylist</h1>
                             <p class="subtitle">AI-Powered Music Discovery</p>
                         </div>
                         
@@ -1041,27 +1024,7 @@
                     this.showMessage = '❌ Popup blocked! Please:\n\n1. Allow popups for this site\n2. Or try opening in a new tab manually\n3. Or use mobile device';
                     this.render();
                     
-                    // Provide alternative: direct link
-                    setTimeout(() => {
-                        this.showMessage = '🔗 Alternative: Click this link to authenticate:\n\n' + authUrl;
-                        this.render();
-                        
-                        // Add a clickable link button
-                        setTimeout(() => {
-                            const linkButton = document.createElement('button');
-                            linkButton.innerHTML = '🔗 Open Spotify Authentication';
-                            linkButton.style.cssText = 'width: 100%; padding: 16px; background: #1DB954; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;';
-                            linkButton.onclick = () => {
-                                window.location.href = authUrl;
-                            };
-                            
-                            const root = document.getElementById('root');
-                            const container = root.querySelector('.container');
-                            if (container) {
-                                container.appendChild(linkButton);
-                            }
-                        }, 1000);
-                    }, 3000);
+            // Alternative link removed as per user request
                     return;
                 }
                 
