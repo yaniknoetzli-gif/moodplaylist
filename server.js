@@ -5,7 +5,7 @@ const https = require('https');
 const CONFIG = require('./config');
 
 const app = express();
-const PORT = 3002;
+const PORT = process.env.PORT || 3002;
 
 // Spotify API Configuration
 const SPOTIFY_CLIENT_ID = CONFIG.SPOTIFY.CLIENT_ID;
@@ -15,7 +15,7 @@ const SPOTIFY_REDIRECT_URI = CONFIG.SPOTIFY.REDIRECT_URI;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+app.use(express.static(path.join(__dirname)));
 
 // Function to exchange authorization code for access token
 async function exchangeCodeForToken(code) {
