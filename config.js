@@ -3,10 +3,10 @@
 
 // Detect environment
 const isProduction = typeof window !== 'undefined' ? 
-  (window.location.hostname === 'moodplaylist.app' || window.location.hostname.includes('vercel.app')) :
+  (window.location.hostname === 'moodplaylist.app' || window.location.hostname === 'www.moodplaylist.app' || window.location.hostname.includes('vercel.app')) :
   (process.env.VERCEL || process.env.NODE_ENV === 'production');
 
-const baseURL = isProduction ? 'https://moodplaylist.app' : 'http://127.0.0.1:3002';
+const baseURL = isProduction ? 'https://www.moodplaylist.app' : 'http://127.0.0.1:3002';
 
 const CONFIG = {
   // Spotify API Configuration
