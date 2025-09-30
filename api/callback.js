@@ -55,7 +55,11 @@ async function exchangeCodeForToken(code) {
             resolve(tokenData);
           } else {
             console.error('❌ Token exchange failed:', tokenData);
-            reject(new Error(tokenData.error_description || tokenData.error || 'Failed to get access token'));
+            if (tokenData.error === 'invalid_grant') {
+              reject(new Error('Authorization code expired or already used. Please try connecting again.'));
+            } else {
+              reject(new Error(tokenData.error_description || tokenData.error || 'Failed to get access token'));
+            }
           }
         } catch (error) {
           console.error('❌ JSON parse error:', error);

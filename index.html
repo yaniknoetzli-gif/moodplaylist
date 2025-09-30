@@ -1019,14 +1019,12 @@
                     return;
                 }
                 
-                // Check if the window was blocked
-                if (!authWindow || authWindow.closed || typeof authWindow.closed == 'undefined') {
-                    this.showMessage = '❌ Popup blocked! Please:\n\n1. Allow popups for this site\n2. Or try opening in a new tab manually\n3. Or use mobile device';
-                    this.render();
-                    
-            // Alternative link removed as per user request
-                    return;
-                }
+            // Check if the window was blocked
+            if (!authWindow || authWindow.closed || typeof authWindow.closed == 'undefined') {
+                this.showMessage = '❌ Popup blocked! Please:\n\n1. Allow popups for this site\n2. Or try opening in a new tab manually\n3. Or use mobile device';
+                this.render();
+                return;
+            }
                 
                 this.authWindowInterval = setInterval(() => {
                     if (authWindow.closed) {
