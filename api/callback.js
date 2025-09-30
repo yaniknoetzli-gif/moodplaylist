@@ -12,6 +12,16 @@ if (!SPOTIFY_CLIENT_SECRET) {
 // Function to exchange authorization code for access token
 async function exchangeCodeForToken(code) {
   return new Promise((resolve, reject) => {
+    console.log('🔄 Attempting token exchange...');
+    console.log('Client ID:', SPOTIFY_CLIENT_ID);
+    console.log('Client Secret length:', SPOTIFY_CLIENT_SECRET ? SPOTIFY_CLIENT_SECRET.length : 'undefined');
+    console.log('Has secret:', !!SPOTIFY_CLIENT_SECRET);
+    
+    if (!SPOTIFY_CLIENT_SECRET) {
+      reject(new Error('SPOTIFY_CLIENT_SECRET environment variable is not set'));
+      return;
+    }
+    
     const postData = new URLSearchParams({
       grant_type: 'authorization_code',
       code: code,
@@ -36,13 +46,20 @@ async function exchangeCodeForToken(code) {
       });
       res.on('end', () => {
         try {
+          console.log('📡 Spotify API Response Status:', res.statusCode);
+          console.log('📡 Spotify API Response Data:', data);
+          
           const tokenData = JSON.parse(data);
           if (tokenData.access_token) {
+            console.log('✅ Token exchange successful');
             resolve(tokenData);
           } else {
-            reject(new Error(tokenData.error_description || 'Failed to get access token'));
+            console.error('❌ Token exchange failed:', tokenData);
+            reject(new Error(tokenData.error_description || tokenData.error || 'Failed to get access token'));
           }
         } catch (error) {
+          console.error('❌ JSON parse error:', error);
+          console.error('❌ Raw response:', data);
           reject(error);
         }
       });
