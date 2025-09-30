@@ -1,7 +1,7 @@
 const https = require('https');
 
 // Spotify API Configuration
-const SPOTIFY_CLIENT_ID = '1517cc34e8c34f298cb332bb9005f245';
+const SPOTIFY_CLIENT_ID = 'cfa3454278f647acbdb0a0d417b5530c';
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
 if (!SPOTIFY_CLIENT_SECRET) {
