@@ -1,8 +1,37 @@
-// MoodPlaylist Configuration
-// IMPORTANT: You need to add your Spotify Client Secret here!
+// ═══════════════════════════════════════════════════════════════════════
+// 🎵 MOODPLAYLIST CONFIGURATION - EASY EDITING GUIDE
+// ═══════════════════════════════════════════════════════════════════════
+//
+// 📝 HOW TO EDIT THIS FILE (NO CODING KNOWLEDGE NEEDED!):
+//
+// 1. CHANGE YOUR WEBSITE URL:
+//    - Find the line below that says 'https://moodplaylist-zeta.vercel.app'
+//    - Replace it with your own Vercel URL (e.g., 'https://yourappname.vercel.app')
+//
+// 2. ADD/EDIT MOODS:
+//    - Scroll down to the MOOD_MAPPING section
+//    - To change a mood's music style, edit the 'genres' (e.g., ['pop', 'rock'])
+//    - Available genres: pop, rock, indie, folk, acoustic, electronic, dance, 
+//      hip-hop, r&b, soul, jazz, classical, metal, punk, country, blues
+//    - Keep genres in quotes and separated by commas
+//
+// 3. ADD NEW MOODS:
+//    - Copy an existing mood block (e.g., 'Happy')
+//    - Paste it and change the name, emoji, genres, and description
+//    - Example emojis: 😊 😢 😌 ⚡ 😍 😠 🤗 😎 🥳 😴 🤔 😱
+//
+// 4. AFTER EDITING:
+//    - Save the file
+//    - If running locally: refresh your browser
+//    - If on Vercel: push to GitHub (git add . && git commit -m "Update config" && git push)
+//
+// ⚠️ IMPORTANT: Keep all commas, brackets, and quotes exactly as they are!
+// ═══════════════════════════════════════════════════════════════════════
 
-// Detect if running on Vercel or localhost
+// Detect if running on Vercel or localhost (DON'T CHANGE THIS SECTION)
 const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
+// 🌐 EDIT YOUR WEBSITE URL HERE (change 'moodplaylist-zeta' to your Vercel app name):
 const baseURL = isProduction ? 'https://moodplaylist-zeta.vercel.app' : 'http://127.0.0.1:3002';
 
 const CONFIG = {

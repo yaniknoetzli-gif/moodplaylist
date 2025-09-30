@@ -241,13 +241,25 @@ app.post('/api/create-playlist', async (req, res) => {
     const moodConfig = CONFIG.MOOD_MAPPING[mood] || CONFIG.MOOD_MAPPING['Happy'];
     
     // Use search instead of recommendations for better compatibility
-    // Search for popular tracks that match the mood
-    const searchQuery = moodConfig.genres[0] || 'pop';
-    const searchYear = new Date().getFullYear();
+    // Add variety by rotating through genres and using random year ranges
+    const genres = moodConfig.genres;
+    const genreIndex = Math.floor(Math.random() * genres.length);
+    const searchGenre = genres[genreIndex] || 'pop';
     
-    console.log(`Searching for ${mood} tracks with query: ${searchQuery}`);
+    // Randomize year range to get different results each time
+    const currentYear = new Date().getFullYear();
+    const yearRanges = [
+      [currentYear-1, currentYear],      // Latest hits
+      [currentYear-3, currentYear-1],    // Recent popular
+      [currentYear-5, currentYear-3],    // A bit older
+      [2018, 2020],                       // 2010s classics
+      [2015, 2018]                        // More variety
+    ];
+    const randomRange = yearRanges[Math.floor(Math.random() * yearRanges.length)];
+    
+    console.log(`Searching for ${mood} tracks with genre: ${searchGenre}, years: ${randomRange[0]}-${randomRange[1]}`);
     const searchResults = await makeSpotifyRequest(
-      `/v1/search?q=year:${searchYear-1}-${searchYear}%20genre:${searchQuery}&type=track&limit=50`,
+      `/v1/search?q=year:${randomRange[0]}-${randomRange[1]}%20genre:${searchGenre}&type=track&limit=50`,
       accessToken
     );
     
@@ -255,10 +267,11 @@ app.post('/api/create-playlist', async (req, res) => {
       throw new Error('No tracks found for this mood. Try a different mood!');
     }
     
-    // Filter tracks by audio features to match the mood
-    // For now, just take the first 30 tracks
-    const trackList = searchResults.tracks.items.slice(0, 30);
-    console.log('Found tracks:', trackList.length);
+    // Shuffle results and take 30 random tracks for variety
+    const allTracks = searchResults.tracks.items;
+    const shuffled = allTracks.sort(() => Math.random() - 0.5);
+    const trackList = shuffled.slice(0, 30);
+    console.log('Found and shuffled tracks:', trackList.length);
 
     // Create playlist
     const playlistData = JSON.stringify({

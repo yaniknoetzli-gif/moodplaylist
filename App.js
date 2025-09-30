@@ -72,31 +72,32 @@ class MoodPlaylistApp {
         console.log('✅ Open button listener attached');
       }
       
-      // Mode toggle buttons
+      // Mode toggle buttons - preserve Spotify connection when switching!
       const moodModeBtn = document.getElementById('moodModeBtn');
       const textModeBtn = document.getElementById('textModeBtn');
       if (moodModeBtn) {
-        moodModeBtn.onclick = () => {
+        moodModeBtn.onclick = (e) => {
+          e.preventDefault();
           this.showTextPrompt = false;
           this.render();
           this.attachDirectListeners();
         };
       }
       if (textModeBtn) {
-        textModeBtn.onclick = () => {
+        textModeBtn.onclick = (e) => {
+          e.preventDefault();
           this.showTextPrompt = true;
           this.render();
           this.attachDirectListeners();
         };
       }
       
-      // Situation input
+      // Situation input - DON'T re-render on every keystroke!
       const situationInput = document.getElementById('situationInput');
       if (situationInput) {
         situationInput.oninput = (e) => {
           this.userSituation = e.target.value;
-          this.render();
-          this.attachDirectListeners();
+          // Don't call render() here - it causes focus loss!
         };
       }
       
