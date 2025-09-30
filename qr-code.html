@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MoodPlaylist QR Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(135deg, #1DB954, #1ed760);
+            color: white;
+            margin: 0;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .qr-code {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .url {
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .instructions {
+            margin-top: 20px;
+            text-align: left;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 MoodPlaylist</h1>
+        <p>Scan this QR code with your phone to access the app!</p>
+        
+        <div class="qr-code">
+            <!-- Simple text-based QR code for localhost:3000 -->
+            <pre>
+████ ▄▄▄▄▄ █▀█ █▄▀▄▀ █ ▄▄▄▄▄ ████
+████ █   █ █▀▀▀█ █ █ █   █ ████
+████ █▄▄▄█ █▀ █▀▄▀ █ █▄▄▄█ ████
+████▄▄▄▄▄▄▄█▄▀ ▀▄▀ █▄▄▄▄▄▄▄████
+████ ▄▄▄▄▄ █▄▀▀▄▀█ █▀▀▄▀█ █▄▀▀▄▀███
+████ █   █ █▀█ █▀▄█ █▀█ █▀▄█ ████
+████ █▄▄▄█ █▀▄▀▄█▀ █▀▄▀▄█▀ █▀▄▀▄███
+████▄▄▄▄▄▄▄█▄▀ ▀▄▀ █▄▄▄▄▄▄▄████
+████ ▄▄▄▄▄ █▄▀▀▄▀█ █▀▀▄▀█ █▄▀▀▄▀███
+████ █   █ █▀█ █▀▄█ █▀█ █▀▄█ ████
+████ █▄▄▄█ █▀▄▀▄█▀ █▀▄▀▄█▀ █▀▄▀▄███
+████▄▄▄▄▄▄▄█▄▀ ▀▄▀ █▄▄▄▄▄▄▄████
+████ ▄▄▄▄▄ █▄▀▀▄▀█ █▀▀▄▀█ █▄▀▀▄▀███
+████ █   █ █▀█ █▀▄█ █▀█ █▀▄█ ████
+████ █▄▄▄█ █▀▄▀▄█▀ █▀▄▀▄█▀ █▀▄▀▄███
+████▄▄▄▄▄▄▄█▄▀ ▀▄▀ █▄▄▄▄▄▄▄████
+████ ▄▄▄▄▄ █▄▀▀▄▀█ █▀▀▄▀█ █▄▀▀▄▀███
+████ █   █ █▀█ █▀▄█ █▀█ █▀▄█ ████
+████ █▄▄▄█ █▀▄▀▄█▀ █▀▄▀▄█▀ █▀▄▀▄███
+████▄▄▄▄▄▄▄█▄▀ ▀▄▀ █▄▄▄▄▄▄▄████
+            </pre>
+        </div>
+        
+        <div class="url">
+            <strong>URL:</strong> http://localhost:3002
+        </div>
+        
+        <div class="instructions">
+            <h3>📱 How to Access on Your Phone:</h3>
+            <ol>
+                <li><strong>Make sure your phone is on the same WiFi</strong> as your MacBook</li>
+                <li><strong>Open your phone's browser</strong> (Safari, Chrome, etc.)</li>
+                <li><strong>Type in the address bar:</strong> <code>http://localhost:3000</code></li>
+                <li><strong>Replace "localhost"</strong> with your MacBook's IP address</li>
+                <li><strong>Find your IP:</strong> Go to System Preferences > Network > WiFi > Advanced > TCP/IP</li>
+            </ol>
+            
+            <p><strong>Alternative:</strong> Install Expo Go app and manually enter the URL!</p>
+        </div>
+    </div>
+</body>
+</html>
