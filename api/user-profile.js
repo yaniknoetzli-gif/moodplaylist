@@ -1,15 +1,4 @@
-const express = require('express');
-const cors = require('cors');
 const https = require('https');
-
-const app = express();
-
-// Middleware
-app.use(cors({
-  origin: ['https://moodplaylist.app', 'https://www.moodplaylist.app', 'http://127.0.0.1:3002', 'http://localhost:3002'],
-  credentials: true
-}));
-app.use(express.json());
 
 // Spotify API helper functions
 async function makeSpotifyRequest(endpoint, accessToken, options = {}) {
@@ -37,6 +26,7 @@ async function makeSpotifyRequest(endpoint, accessToken, options = {}) {
         try {
           console.log(`API Response - Status: ${res.statusCode}, Endpoint: ${requestOptions.path}`);
           
+          // Handle empty responses
           if (!data || data.trim() === '') {
             if (res.statusCode >= 200 && res.statusCode < 300) {
               resolve({});
@@ -81,8 +71,22 @@ async function makeSpotifyRequest(endpoint, accessToken, options = {}) {
   });
 }
 
-// API endpoint to get user profile
-app.post('/', async (req, res) => {
+// Vercel serverless function handler
+export default async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
     const { accessToken } = req.body;
 
@@ -100,6 +104,4 @@ app.post('/', async (req, res) => {
       message: error.message 
     });
   }
-});
-
-module.exports = app;
+}

@@ -1,4 +1,18 @@
 {
+  "functions": {
+    "api/callback.js": {
+      "maxDuration": 30
+    },
+    "api/create-playlist.js": {
+      "maxDuration": 30
+    },
+    "api/user-profile.js": {
+      "maxDuration": 10
+    },
+    "api/feedback.js": {
+      "maxDuration": 10
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api/).*)",

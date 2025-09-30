@@ -1,24 +1,8 @@
-const express = require('express');
-const cors = require('cors');
 const https = require('https');
-const CONFIG = require('../config');
-
-const app = express();
-
-// Middleware
-app.use(cors({
-  origin: ['https://moodplaylist.app', 'https://www.moodplaylist.app', 'http://127.0.0.1:3002', 'http://localhost:3002'],
-  credentials: true
-}));
-
-// Detect if running on Vercel or localhost
-const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
-const baseURL = isProduction ? 'https://moodplaylist.app' : 'http://127.0.0.1:3002';
 
 // Spotify API Configuration
-const SPOTIFY_CLIENT_ID = CONFIG.SPOTIFY.CLIENT_ID;
-const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || CONFIG.SPOTIFY.CLIENT_SECRET;
-const SPOTIFY_REDIRECT_URI = `${baseURL}/api/callback`;
+const SPOTIFY_CLIENT_ID = '1517cc34e8c34f298cb332bb9005f245';
+const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || 'your_spotify_client_secret_here';
 
 // Function to exchange authorization code for access token
 async function exchangeCodeForToken(code) {
@@ -26,7 +10,7 @@ async function exchangeCodeForToken(code) {
     const postData = new URLSearchParams({
       grant_type: 'authorization_code',
       code: code,
-      redirect_uri: SPOTIFY_REDIRECT_URI
+      redirect_uri: 'https://moodplaylist.app/callback'
     }).toString();
 
     const options = {
@@ -68,8 +52,22 @@ async function exchangeCodeForToken(code) {
   });
 }
 
-// Spotify OAuth callback handler
-app.get('/', async (req, res) => {
+// Vercel serverless function handler
+export default async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   const { code, error } = req.query;
   
   if (error) {
@@ -146,6 +144,4 @@ app.get('/', async (req, res) => {
       </html>
     `);
   }
-});
-
-module.exports = app;
+}

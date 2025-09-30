@@ -1,16 +1,44 @@
-const express = require('express');
-const cors = require('cors');
 const https = require('https');
-const CONFIG = require('../config');
 
-const app = express();
-
-// Middleware
-app.use(cors({
-  origin: ['https://moodplaylist.app', 'https://www.moodplaylist.app', 'http://127.0.0.1:3002', 'http://localhost:3002'],
-  credentials: true
-}));
-app.use(express.json());
+// Mood mapping configuration
+const MOOD_MAPPING = {
+  'Happy': {
+    genres: ['pop', 'dance', 'disco', 'funk', 'reggae'],
+    target_energy: 0.8,
+    target_valence: 0.9,
+    description: 'Upbeat and joyful vibes'
+  },
+  'Sad': {
+    genres: ['indie', 'folk', 'acoustic', 'blues', 'soul'],
+    target_energy: 0.3,
+    target_valence: 0.2,
+    description: 'Melancholic and introspective'
+  },
+  'Calm': {
+    genres: ['ambient', 'chill', 'acoustic', 'classical', 'jazz'],
+    target_energy: 0.2,
+    target_valence: 0.5,
+    description: 'Peaceful and relaxing'
+  },
+  'Energetic': {
+    genres: ['rock', 'electronic', 'hip-hop', 'metal', 'punk'],
+    target_energy: 0.9,
+    target_valence: 0.7,
+    description: 'High-energy and intense'
+  },
+  'Romantic': {
+    genres: ['pop', 'r&b', 'soul', 'jazz', 'acoustic'],
+    target_energy: 0.4,
+    target_valence: 0.6,
+    description: 'Intimate and loving'
+  },
+  'Angry': {
+    genres: ['metal', 'punk', 'rock', 'hip-hop', 'electronic'],
+    target_energy: 0.9,
+    target_valence: 0.3,
+    description: 'Intense and aggressive'
+  }
+};
 
 // Spotify API helper functions
 async function makeSpotifyRequest(endpoint, accessToken, options = {}) {
@@ -38,6 +66,7 @@ async function makeSpotifyRequest(endpoint, accessToken, options = {}) {
         try {
           console.log(`API Response - Status: ${res.statusCode}, Endpoint: ${requestOptions.path}`);
           
+          // Handle empty responses
           if (!data || data.trim() === '') {
             if (res.statusCode >= 200 && res.statusCode < 300) {
               resolve({});
@@ -82,8 +111,22 @@ async function makeSpotifyRequest(endpoint, accessToken, options = {}) {
   });
 }
 
-// API endpoint to create playlist
-app.post('/', async (req, res) => {
+// Vercel serverless function handler
+export default async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
     const { accessToken, mood, userId } = req.body;
 
@@ -100,9 +143,10 @@ app.post('/', async (req, res) => {
     }
 
     // Map mood to Spotify seed parameters using config
-    const moodConfig = CONFIG.MOOD_MAPPING[mood] || CONFIG.MOOD_MAPPING['Happy'];
+    const moodConfig = MOOD_MAPPING[mood] || MOOD_MAPPING['Happy'];
     
     // Use search instead of recommendations for better compatibility
+    // Add variety by rotating through genres and using random year ranges
     const genres = moodConfig.genres;
     const genreIndex = Math.floor(Math.random() * genres.length);
     const searchGenre = genres[genreIndex] || 'pop';
@@ -180,6 +224,4 @@ app.post('/', async (req, res) => {
       message: error.message 
     });
   }
-});
-
-module.exports = app;
+}
