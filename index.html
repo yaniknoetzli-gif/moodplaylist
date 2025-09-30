@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoodPlaylist - AI-Powered Music Discovery</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-268N7SZJTZ"></script>
     <script>
@@ -49,6 +53,17 @@
         .header {
             text-align: center;
             margin-bottom: 30px;
+        }
+        
+        .logo-container {
+            margin-bottom: 15px;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
         .title {
@@ -677,7 +692,10 @@
                 document.getElementById('root').innerHTML = `
                     <div class="container">
                         <div class="header">
-                            <h1 class="title">🎵 MoodPlaylist</h1>
+                            <div class="logo-container">
+                                <img src="assets/logo-simple.svg" alt="MoodPlaylist Logo" class="logo">
+                            </div>
+                            <h1 class="title">MoodPlaylist</h1>
                             <p class="subtitle">AI-Powered Music Discovery</p>
                         </div>
                         

@@ -1,4 +1,4 @@
-const https = require('https');
+import https from 'https';
 
 // Mood mapping configuration
 const MOOD_MAPPING = {
@@ -225,3 +225,5 @@ export default async function handler(req, res) {
     });
   }
 }
+
+export default handler;
