@@ -31,8 +31,8 @@
 // Detect if running on Vercel or localhost (DON'T CHANGE THIS SECTION)
 const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
 
-// 🌐 EDIT YOUR WEBSITE URL HERE (change 'moodplaylist-zeta' to your Vercel app name):
-const baseURL = isProduction ? 'https://moodplaylist-zeta.vercel.app' : 'http://127.0.0.1:3002';
+// 🌐 YOUR CUSTOM DOMAIN:
+const baseURL = isProduction ? 'https://moodplaylist.app' : 'http://127.0.0.1:3002';
 
 const CONFIG = {
   SPOTIFY: {

@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3002;
 
 // Detect if running on Vercel or localhost
 const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
-const baseURL = isProduction ? 'https://moodplaylist-zeta.vercel.app' : 'http://127.0.0.1:3002';
+const baseURL = isProduction ? 'https://moodplaylist.app' : 'http://127.0.0.1:3002';
 
 // Spotify API Configuration
 const SPOTIFY_CLIENT_ID = CONFIG.SPOTIFY.CLIENT_ID;
