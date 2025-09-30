@@ -1,4 +1,4 @@
-import https from 'https';
+const https = require('https');
 
 // Spotify API helper functions
 async function makeSpotifyRequest(endpoint, accessToken, options = {}) {
@@ -106,4 +106,4 @@ export default async function handler(req, res) {
   }
 }
 
-export default handler;
+module.exports = handler;

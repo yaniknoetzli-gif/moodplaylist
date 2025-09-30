@@ -1,4 +1,4 @@
-import https from 'https';
+const https = require('https');
 
 // Spotify API Configuration
 const SPOTIFY_CLIENT_ID = '1517cc34e8c34f298cb332bb9005f245';
@@ -172,4 +172,4 @@ export default async function handler(req, res) {
   }
 }
 
-export default handler;
+module.exports = handler;
