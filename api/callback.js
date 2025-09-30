@@ -15,7 +15,7 @@ async function exchangeCodeForToken(code) {
     const postData = new URLSearchParams({
       grant_type: 'authorization_code',
       code: code,
-      redirect_uri: 'https://moodplaylist.app/callback'
+      redirect_uri: 'https://www.moodplaylist.app/api/callback'
     }).toString();
 
     const options = {
