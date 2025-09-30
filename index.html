@@ -1007,11 +1007,43 @@
                 this.showMessage = '🎵 Opening Spotify authentication...\n\nYou will be redirected to Spotify to authorize the app.';
                 this.render();
                 
-                const authWindow = window.open(authUrl, '_blank', 'width=500,height=600,scrollbars=yes,resizable=yes');
-                
-                if (!authWindow || authWindow.closed || typeof authWindow.closed == 'undefined') {
-                    this.showMessage = '❌ Popup blocked! Please allow popups for this site and try again.';
+                // Try to open Spotify authentication in a new tab
+                let authWindow;
+                try {
+                    authWindow = window.open(authUrl, '_blank', 'width=500,height=600,scrollbars=yes,resizable=yes,noopener=yes');
+                } catch (error) {
+                    console.error('Failed to open auth window:', error);
+                    this.showMessage = '❌ Failed to open authentication window. Please try again.';
                     this.render();
+                    return;
+                }
+                
+                // Check if the window was blocked
+                if (!authWindow || authWindow.closed || typeof authWindow.closed == 'undefined') {
+                    this.showMessage = '❌ Popup blocked! Please:\n\n1. Allow popups for this site\n2. Or try opening in a new tab manually\n3. Or use mobile device';
+                    this.render();
+                    
+                    // Provide alternative: direct link
+                    setTimeout(() => {
+                        this.showMessage = '🔗 Alternative: Click this link to authenticate:\n\n' + authUrl;
+                        this.render();
+                        
+                        // Add a clickable link button
+                        setTimeout(() => {
+                            const linkButton = document.createElement('button');
+                            linkButton.innerHTML = '🔗 Open Spotify Authentication';
+                            linkButton.style.cssText = 'width: 100%; padding: 16px; background: #1DB954; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;';
+                            linkButton.onclick = () => {
+                                window.location.href = authUrl;
+                            };
+                            
+                            const root = document.getElementById('root');
+                            const container = root.querySelector('.container');
+                            if (container) {
+                                container.appendChild(linkButton);
+                            }
+                        }, 1000);
+                    }, 3000);
                     return;
                 }
                 
