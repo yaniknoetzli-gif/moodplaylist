@@ -16,8 +16,11 @@ const SPOTIFY_CLIENT_ID = CONFIG.SPOTIFY.CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || CONFIG.SPOTIFY.CLIENT_SECRET;
 const SPOTIFY_REDIRECT_URI = `${baseURL}/callback`;
 
-// Middleware
-app.use(cors());
+// Middleware - Enhanced CORS for production
+app.use(cors({
+  origin: ['https://moodplaylist.app', 'https://www.moodplaylist.app', 'http://127.0.0.1:3002', 'http://localhost:3002'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
@@ -342,6 +345,30 @@ app.post('/api/user-profile', async (req, res) => {
   }
 });
 
+// Feedback endpoint
+app.post('/api/feedback', async (req, res) => {
+  try {
+    const { feedback, userProfile, timestamp } = req.body;
+    
+    // Log feedback to console (you can later add email/database)
+    console.log('\n📬 NEW FEEDBACK RECEIVED:');
+    console.log('═══════════════════════════════════════');
+    console.log('From:', userProfile);
+    console.log('Time:', timestamp);
+    console.log('Feedback:', feedback);
+    console.log('═══════════════════════════════════════\n');
+    
+    // TODO: Send email to yaniknoezli@gmx.ch
+    // For now, you'll see it in the server logs
+    // You can add email sending later with nodemailer
+    
+    res.json({ success: true, message: 'Feedback received!' });
+  } catch (error) {
+    console.error('Feedback error:', error);
+    res.status(500).json({ error: 'Failed to save feedback' });
+  }
+});
+
 // Serve the main app
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
@@ -352,4 +379,6 @@ app.listen(PORT, () => {
   console.log('📱 Open this URL in your browser to use the app!');
   console.log('🚀 App loads instantly - no more waiting!');
   console.log('🔧 Real Spotify integration ready!');
+  console.log('📬 Feedback will be logged to console');
+  console.log(`📧 Remember to check logs for user feedback!`);
 });

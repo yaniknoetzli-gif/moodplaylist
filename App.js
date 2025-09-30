@@ -10,6 +10,7 @@ class MoodPlaylistApp {
     this.isLoading = false;
     this.showTextPrompt = false;
     this.userSituation = '';
+    this.showFeedbackForm = false;
     
     this.moods = [
     { name: 'Happy', emoji: '😊', color: '#FFD700' },
@@ -123,6 +124,37 @@ class MoodPlaylistApp {
         };
       });
       console.log('✅ Mood button listeners attached:', moodButtons.length);
+      
+      // Feedback button
+      const feedbackBtn = document.getElementById('feedbackBtn');
+      if (feedbackBtn) {
+        feedbackBtn.onclick = (e) => {
+          e.preventDefault();
+          this.showFeedbackForm = true;
+          this.render();
+          this.attachDirectListeners();
+        };
+      }
+      
+      // Send feedback button
+      const sendFeedbackBtn = document.getElementById('sendFeedbackBtn');
+      if (sendFeedbackBtn) {
+        sendFeedbackBtn.onclick = (e) => {
+          e.preventDefault();
+          this.sendFeedback();
+        };
+      }
+      
+      // Cancel feedback button
+      const cancelFeedbackBtn = document.getElementById('cancelFeedbackBtn');
+      if (cancelFeedbackBtn) {
+        cancelFeedbackBtn.onclick = (e) => {
+          e.preventDefault();
+          this.showFeedbackForm = false;
+          this.render();
+          this.attachDirectListeners();
+        };
+      }
     };
     
     // Try multiple times to ensure attachment
@@ -211,27 +243,53 @@ class MoodPlaylistApp {
           </button>
         ` : ''}
         
+        <button class="feedback-button" id="feedbackBtn">
+          💬 Send Feedback
+        </button>
+        
+        ${this.showFeedbackForm ? `
+          <div class="feedback-modal">
+            <div class="feedback-content">
+              <h3>📬 Send Us Your Feedback</h3>
+              <textarea 
+                class="feedback-input" 
+                id="feedbackText"
+                placeholder="Tell us what you think! Bugs, suggestions, or just say hi! 😊"
+                rows="5"
+              ></textarea>
+              <div class="feedback-buttons">
+                <button class="feedback-send-btn" id="sendFeedbackBtn">
+                  ✉️ Send
+                </button>
+                <button class="feedback-cancel-btn" id="cancelFeedbackBtn">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+        
         <div class="features-container">
           <h3 class="features-title">🎯 App Features</h3>
           <div class="feature">
-            <span class="feature-icon">📷</span>
-            <span class="feature-text">Facial Expression Detection</span>
-          </div>
-          <div class="feature">
-            <span class="feature-icon">👔</span>
-            <span class="feature-text">Appearance Analysis</span>
-          </div>
-          <div class="feature">
             <span class="feature-icon">🤖</span>
-            <span class="feature-text">AI-Powered Recommendations</span>
+            <span class="feature-text">AI Mood Detection</span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">✍️</span>
+            <span class="feature-text">Text-based Situation Analysis</span>
           </div>
           <div class="feature">
             <span class="feature-icon">🎵</span>
             <span class="feature-text">Spotify Integration</span>
           </div>
           <div class="feature">
-            <span class="feature-icon">📱</span>
-            <span class="feature-text">Cross-Platform (iOS & Android)</span>
+            <span class="feature-icon">🔀</span>
+            <span class="feature-text">Variety in Every Playlist</span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">⚡</span>
+            <span class="feature-text">Instant Generation</span>
           </div>
         </div>
       </div>
@@ -662,6 +720,47 @@ class MoodPlaylistApp {
         this.showMessage = null;
         this.render();
       }, 5000);
+    }
+  }
+  
+  async sendFeedback() {
+    const feedbackText = document.getElementById('feedbackText').value.trim();
+    
+    if (!feedbackText) {
+      alert('Please enter some feedback before sending!');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${CONFIG.API.BASE_URL}/api/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          feedback: feedbackText,
+          userProfile: this.userProfile?.display_name || 'Anonymous',
+          timestamp: new Date().toISOString()
+        })
+      });
+      
+      if (response.ok) {
+        this.showMessage = '✅ Thank you for your feedback! We really appreciate it! 💙';
+        this.showFeedbackForm = false;
+        this.render();
+        this.attachDirectListeners();
+        
+        setTimeout(() => {
+          this.showMessage = null;
+          this.render();
+          this.attachDirectListeners();
+        }, 3000);
+      } else {
+        throw new Error('Failed to send feedback');
+      }
+    } catch (error) {
+      console.error('Feedback error:', error);
+      this.showMessage = '❌ Failed to send feedback. Please try again later.';
+      this.render();
+      this.attachDirectListeners();
     }
   }
 }
