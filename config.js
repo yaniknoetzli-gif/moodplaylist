@@ -1,11 +1,15 @@
 // MoodPlaylist Configuration
 // IMPORTANT: You need to add your Spotify Client Secret here!
 
+// Detect if running on Vercel or localhost
+const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+const baseURL = isProduction ? 'https://moodplaylist-zeta.vercel.app' : 'http://127.0.0.1:3002';
+
 const CONFIG = {
   SPOTIFY: {
     CLIENT_ID: 'cfa3454278f647acbdb0a0d417b5530c',
     CLIENT_SECRET: '1517cc34e8c34f298cb332bb9005f245', // ADD YOUR SECRET HERE
-    REDIRECT_URI: 'http://127.0.0.1:3002/callback',
+    REDIRECT_URI: `${baseURL}/callback`,
     SCOPES: [
       'user-read-private',
       'user-read-email',
@@ -57,7 +61,7 @@ const CONFIG = {
   },
   
   API: {
-    BASE_URL: 'http://127.0.0.1:3002',
+    BASE_URL: baseURL,
     ENDPOINTS: {
       CREATE_PLAYLIST: '/api/create-playlist',
       USER_PROFILE: '/api/user-profile'

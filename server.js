@@ -7,10 +7,14 @@ const CONFIG = require('./config');
 const app = express();
 const PORT = process.env.PORT || 3002;
 
+// Detect if running on Vercel or localhost
+const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
+const baseURL = isProduction ? 'https://moodplaylist-zeta.vercel.app' : 'http://127.0.0.1:3002';
+
 // Spotify API Configuration
 const SPOTIFY_CLIENT_ID = CONFIG.SPOTIFY.CLIENT_ID;
-const SPOTIFY_CLIENT_SECRET = CONFIG.SPOTIFY.CLIENT_SECRET;
-const SPOTIFY_REDIRECT_URI = CONFIG.SPOTIFY.REDIRECT_URI;
+const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET || CONFIG.SPOTIFY.CLIENT_SECRET;
+const SPOTIFY_REDIRECT_URI = `${baseURL}/callback`;
 
 // Middleware
 app.use(cors());
