@@ -423,6 +423,76 @@
         .feedback-cancel-btn:hover {
             background: #d0d0d0;
         }
+        
+        /* Advanced Settings Styles */
+        .toggle-advanced {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-advanced:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .advanced-settings {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .advanced-settings h3 {
+            color: #fff;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .setting-group {
+            margin-bottom: 15px;
+        }
+        
+        .setting-group label {
+            display: block;
+            color: #fff;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .setting-input, .setting-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .setting-input:focus, .setting-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+        
+        .setting-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .setting-select option {
+            background: #2c3e50;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -730,6 +800,45 @@
                             </div>
                         ` : ''}
                         
+                        <!-- Advanced Playlist Settings -->
+                        <div class="advanced-settings" id="advancedSettings" style="display: none;">
+                            <h3>🎛️ Advanced Settings</h3>
+                            
+                            <div class="setting-group">
+                                <label for="playlistSize">Playlist Size (1-100):</label>
+                                <input type="number" id="playlistSize" min="1" max="100" value="20" class="setting-input">
+                            </div>
+                            
+                            <div class="setting-group">
+                                <label for="artistPopularity">Artist Popularity:</label>
+                                <select id="artistPopularity" class="setting-select">
+                                    <option value="any">Any Popularity</option>
+                                    <option value="high">High (1M+ listeners)</option>
+                                    <option value="medium">Medium (100K-1M listeners)</option>
+                                    <option value="low">Low (<100K listeners)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="setting-group">
+                                <label for="genre">Genre:</label>
+                                <select id="genre" class="setting-select">
+                                    <option value="any">Any Genre</option>
+                                    <option value="pop">Pop</option>
+                                    <option value="rock">Rock</option>
+                                    <option value="hip-hop">Hip Hop</option>
+                                    <option value="electronic">Electronic</option>
+                                    <option value="jazz">Jazz</option>
+                                    <option value="classical">Classical</option>
+                                    <option value="country">Country</option>
+                                    <option value="r&b">R&B</option>
+                                    <option value="indie">Indie</option>
+                                    <option value="alternative">Alternative</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button class="toggle-advanced" id="toggleAdvanced">⚙️ Advanced Settings</button>
+                        
                         <button class="spotify-button connect-button ${this.isSpotifyConnected ? 'connected' : ''}" id="connectSpotify" ${this.isLoading ? 'disabled' : ''}>
                             ${this.isLoading && !this.isSpotifyConnected ? '🔄 Connecting...' : 
                                 this.isSpotifyConnected ? '✅ Spotify Connected' : '🎵 Connect to Spotify'}
@@ -841,6 +950,13 @@
                             if (this.createdPlaylist && this.createdPlaylist.url) {
                                 window.open(this.createdPlaylist.url, '_blank');
                             }
+                            return;
+                        }
+                        
+                        if (e.target.closest('.toggle-advanced') || e.target.id === 'toggleAdvanced') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.toggleAdvancedSettings();
                             return;
                         }
                     } catch (error) {
@@ -1025,6 +1141,14 @@
                 this.render();
                 return;
             }
+            
+            // Add a fallback: if popup is blocked, try opening in same window
+            setTimeout(() => {
+                if (authWindow.closed) {
+                    console.log('🔄 Popup was blocked, trying fallback...');
+                    window.location.href = authUrl;
+                }
+            }, 1000);
                 
                 this.authWindowInterval = setInterval(() => {
                     if (authWindow.closed) {
@@ -1171,7 +1295,8 @@
                 this.render();
                 
                 try {
-                    const playlistData = await this.createRealPlaylist(this.selectedMood);
+                    const advancedSettings = this.getAdvancedSettings();
+                    const playlistData = await this.createRealPlaylist(this.selectedMood, advancedSettings);
                     this.createdPlaylist = playlistData;
                     this.isLoading = false;
                     
@@ -1195,13 +1320,14 @@
                 }, 8000);
             }
             
-            async createRealPlaylist(mood) {
+            async createRealPlaylist(mood, advancedSettings = {}) {
                 try {
                     console.log('Creating playlist with:', {
                         baseURL: CONFIG.API.BASE_URL,
                         endpoint: CONFIG.API.ENDPOINTS.CREATE_PLAYLIST,
                         mood: mood.name,
-                        hasToken: !!this.accessToken
+                        hasToken: !!this.accessToken,
+                        advancedSettings
                     });
 
                     const response = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.CREATE_PLAYLIST}`, {
@@ -1212,7 +1338,10 @@
                         body: JSON.stringify({
                             accessToken: this.accessToken,
                             mood: mood.name,
-                            userId: this.userProfile?.id
+                            userId: this.userProfile?.id,
+                            playlistSize: advancedSettings.playlistSize || 20,
+                            artistPopularity: advancedSettings.artistPopularity || 'any',
+                            genre: advancedSettings.genre || 'any'
                         })
                     });
 
@@ -1292,6 +1421,31 @@
                     this.render();
                     this.attachDirectListeners();
                 }
+            }
+            
+            toggleAdvancedSettings() {
+                const advancedSettings = document.getElementById('advancedSettings');
+                const toggleBtn = document.getElementById('toggleAdvanced');
+                
+                if (advancedSettings.style.display === 'none') {
+                    advancedSettings.style.display = 'block';
+                    toggleBtn.textContent = '⚙️ Hide Advanced Settings';
+                } else {
+                    advancedSettings.style.display = 'none';
+                    toggleBtn.textContent = '⚙️ Advanced Settings';
+                }
+            }
+            
+            getAdvancedSettings() {
+                const playlistSize = document.getElementById('playlistSize')?.value || 20;
+                const artistPopularity = document.getElementById('artistPopularity')?.value || 'any';
+                const genre = document.getElementById('genre')?.value || 'any';
+                
+                return {
+                    playlistSize: parseInt(playlistSize),
+                    artistPopularity,
+                    genre
+                };
             }
         }
 

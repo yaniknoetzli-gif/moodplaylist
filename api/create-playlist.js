@@ -128,11 +128,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { accessToken, mood, userId } = req.body;
+    const { accessToken, mood, userId, playlistSize = 20, artistPopularity = 'any', genre = 'any' } = req.body;
 
     if (!accessToken || !mood) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
+    
+    console.log('Advanced settings:', { playlistSize, artistPopularity, genre });
 
     // Get user profile if userId not provided
     let finalUserId = userId;
@@ -147,7 +149,13 @@ export default async function handler(req, res) {
     
     // Use search instead of recommendations for better compatibility
     // Add variety by rotating through genres and using random year ranges
-    const genres = moodConfig.genres;
+    let genres = moodConfig.genres;
+    
+    // Override genre if user specified one
+    if (genre !== 'any') {
+      genres = [genre];
+    }
+    
     const genreIndex = Math.floor(Math.random() * genres.length);
     const searchGenre = genres[genreIndex] || 'pop';
     
@@ -172,11 +180,34 @@ export default async function handler(req, res) {
       throw new Error('No tracks found for this mood. Try a different mood!');
     }
     
-    // Shuffle results and take 30 random tracks for variety
-    const allTracks = searchResults.tracks.items;
+    // Filter by artist popularity if specified
+    let allTracks = searchResults.tracks.items;
+    if (artistPopularity !== 'any') {
+      allTracks = allTracks.filter(track => {
+        const popularity = track.popularity || 0;
+        switch (artistPopularity) {
+          case 'high':
+            return popularity >= 70; // High popularity tracks
+          case 'medium':
+            return popularity >= 30 && popularity < 70; // Medium popularity
+          case 'low':
+            return popularity < 30; // Low popularity tracks
+          default:
+            return true;
+        }
+      });
+      
+      // If filtering removed all tracks, use original list
+      if (allTracks.length === 0) {
+        console.log('No tracks match popularity filter, using all tracks');
+        allTracks = searchResults.tracks.items;
+      }
+    }
+    
+    // Shuffle results and take the requested number of tracks
     const shuffled = allTracks.sort(() => Math.random() - 0.5);
-    const trackList = shuffled.slice(0, 30);
-    console.log('Found and shuffled tracks:', trackList.length);
+    const trackList = shuffled.slice(0, Math.min(playlistSize, shuffled.length));
+    console.log(`Found and shuffled tracks: ${trackList.length} (requested: ${playlistSize})`);
 
     // Create playlist
     const playlistData = JSON.stringify({
