@@ -709,6 +709,17 @@
                     if (situationInput) {
                         situationInput.oninput = (e) => {
                             this.userSituation = e.target.value;
+                            // Update button state in real-time
+                            const analyzeBtn = document.getElementById('analyzeSituation');
+                            if (analyzeBtn) {
+                                if (this.userSituation.trim()) {
+                                    analyzeBtn.disabled = false;
+                                    analyzeBtn.textContent = '🤖 Analyze & Generate Playlist';
+                                } else {
+                                    analyzeBtn.disabled = true;
+                                    analyzeBtn.textContent = '🤖 Analyze & Generate Playlist';
+                                }
+                            }
                         };
                     }
                     
@@ -717,8 +728,12 @@
                         analyzeBtn.onclick = (e) => {
                             e.preventDefault();
                             e.stopPropagation();
+                            console.log('Analyze button clicked!');
                             this.analyzeSituation();
                         };
+                        console.log('✅ Analyze button listener attached');
+                    } else {
+                        console.log('❌ Analyze button not found');
                     }
                     
                     const moodButtons = document.querySelectorAll('.mood-button');
