@@ -1478,6 +1478,21 @@
                 app.isLoading = false;
                 app.showMessage = `❌ Authentication failed: ${error}`;
                 app.render();
+            } else {
+                // Check for token data in localStorage (from callback redirect)
+                const tokenData = localStorage.getItem('spotifyTokenData');
+                if (tokenData) {
+                    console.log('🎵 Token data found in localStorage, processing...');
+                    try {
+                        const parsedTokenData = JSON.parse(tokenData);
+                        app.handleSpotifyTokenData(parsedTokenData);
+                        // Clear the token data from localStorage
+                        localStorage.removeItem('spotifyTokenData');
+                    } catch (error) {
+                        console.error('❌ Error parsing token data:', error);
+                        localStorage.removeItem('spotifyTokenData');
+                    }
+                }
             }
         });
     </script>

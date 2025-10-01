@@ -141,24 +141,18 @@ export default async function handler(req, res) {
         return res.json(tokenData);
       }
       
-      // Send HTML for GET requests (redirect from Spotify)
+      // Redirect back to the main app with the token data
+      const tokenDataJson = JSON.stringify(tokenData);
       res.send(`
         <html>
           <head><title>Spotify Auth Success</title></head>
           <body>
             <h2>✅ Authentication Successful!</h2>
-            <p>You can close this window and return to the app.</p>
+            <p>Redirecting back to the app...</p>
             <script>
-              // Send the token data to the parent window
-              if (window.opener) {
-                window.opener.postMessage({ 
-                  type: 'SPOTIFY_AUTH_SUCCESS', 
-                  tokenData: ${JSON.stringify(tokenData)}
-                }, '*');
-              }
-              setTimeout(() => {
-                window.close();
-              }, 2000);
+              // Store token data in localStorage and redirect
+              localStorage.setItem('spotifyTokenData', '${tokenDataJson}');
+              window.location.href = 'https://www.moodplaylist.app/';
             </script>
           </body>
         </html>
