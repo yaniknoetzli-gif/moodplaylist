@@ -1463,7 +1463,22 @@
         // Initialize the app when the page loads
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🎵 MoodPlaylist App Starting...');
-            new MoodPlaylistApp();
+            const app = new MoodPlaylistApp();
+            
+            // Check if we're returning from Spotify authentication
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const error = urlParams.get('error');
+            
+            if (code) {
+                console.log('🎵 Authorization code received, processing...');
+                app.handleSpotifyCallback(code);
+            } else if (error) {
+                console.error('❌ Spotify authentication error:', error);
+                app.isLoading = false;
+                app.showMessage = `❌ Authentication failed: ${error}`;
+                app.render();
+            }
         });
     </script>
 </body>
