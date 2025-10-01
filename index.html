@@ -737,16 +737,20 @@
                     }
                     
                     const moodButtons = document.querySelectorAll('.mood-button');
-                    moodButtons.forEach((btn) => {
-                        btn.onclick = (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            const moodName = btn.dataset.mood;
-                            console.log('Mood button clicked:', moodName);
-                            this.selectMood(moodName);
-                        };
-                    });
-                    console.log('✅ Mood button listeners attached:', moodButtons.length);
+                    if (moodButtons.length > 0) {
+                        moodButtons.forEach((btn) => {
+                            btn.onclick = (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const moodName = btn.dataset.mood;
+                                console.log('Mood button clicked:', moodName);
+                                this.selectMood(moodName);
+                            };
+                        });
+                        console.log('✅ Mood button listeners attached:', moodButtons.length);
+                    } else {
+                        console.log('❌ No mood buttons found');
+                    }
                     
                     const feedbackBtn = document.getElementById('feedbackBtn');
                     if (feedbackBtn) {
@@ -897,11 +901,6 @@
                                 !this.isSpotifyConnected ? 'Connect Spotify First' : 
                                 !this.selectedMood ? 'Select a Mood First' : 'Generate Playlist'}
                         </button>
-                        <script>
-                            console.log('🔍 Render debug - selectedMood:', '${this.selectedMood?.name || 'null'}');
-                            console.log('🔍 Render debug - isSpotifyConnected:', ${this.isSpotifyConnected});
-                            console.log('🔍 Render debug - isLoading:', ${this.isLoading});
-                        </script>
                         
                         ${this.showMessage ? `
                             <div class="message-container">
@@ -1043,8 +1042,6 @@
                 // Track mood selection
                 trackEvent('mood_selected', 'user_interaction', moodName);
                 console.log('📊 User selected mood:', moodName);
-                console.log('📊 Selected mood object:', this.selectedMood);
-                console.log('📊 Spotify connected:', this.isSpotifyConnected);
                 
                 this.render();
             }
