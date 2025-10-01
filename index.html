@@ -1136,12 +1136,9 @@
                 
                 setTimeout(() => {
                     this.isLoading = false;
-                    this.showMessage = `🎯 Detected Mood: ${this.selectedMood.emoji} ${this.selectedMood.name}\n\nGenerating your personalized playlist...`;
+                    this.showMessage = `🎯 Detected Mood: ${this.selectedMood.emoji} ${this.selectedMood.name}\n\nYou can now adjust advanced settings and generate your playlist!`;
                     this.render();
-                    
-                    setTimeout(() => {
-                        this.generatePlaylist();
-                    }, 1500);
+                    this.attachDirectListeners();
                 }, 2000);
             }
             
@@ -1244,10 +1241,11 @@
                     console.error('Token handling error:', error);
                     this.showMessage = `❌ Failed to complete authentication: ${error.message}`;
                     this.render();
-                    setTimeout(() => {
-                        this.showMessage = null;
-                        this.render();
-                    }, 5000);
+                setTimeout(() => {
+                    this.showMessage = null;
+                    this.render();
+                    this.attachDirectListeners();
+                }, 5000);
                 }
             }
             
@@ -1318,11 +1316,13 @@
                     
                     this.showMessage = `🎵 Your ${this.selectedMood.name} playlist is ready!\n\n✅ Created: "${playlistData.name}"\n• ${playlistData.trackCount} tracks added\n• Saved to your Spotify account\n• Open Spotify to listen!`;
                     this.render();
+                    this.attachDirectListeners();
                 } catch (error) {
                     console.error('Playlist creation error:', error);
                     this.isLoading = false;
                     this.showMessage = `❌ Failed to create playlist: ${error.message}\n\nPlease try again or check your Spotify connection.`;
                     this.render();
+                    this.attachDirectListeners();
                     return;
                 }
                 
