@@ -760,6 +760,15 @@
                             this.attachDirectListeners();
                         };
                     }
+                    
+                    const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
+                    if (toggleAdvancedBtn) {
+                        toggleAdvancedBtn.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.toggleAdvancedSettings();
+                        };
+                    }
                 };
                 
                 setTimeout(attachListeners, 100);
