@@ -793,6 +793,11 @@
                 setTimeout(attachListeners, 100);
                 setTimeout(attachListeners, 500);
                 setTimeout(attachListeners, 1000);
+                
+                // Update button states after attaching listeners
+                setTimeout(() => {
+                    this.updateButtonStates();
+                }, 150);
             }
             
             render() {
@@ -901,6 +906,13 @@
                                 !this.isSpotifyConnected ? 'Connect Spotify First' : 
                                 !this.selectedMood ? 'Select a Mood First' : 'Generate Playlist'}
                         </button>
+                        <script>
+                            console.log('🔍 Button State Debug:');
+                            console.log('  - selectedMood:', '${this.selectedMood?.name || 'null'}');
+                            console.log('  - isSpotifyConnected:', ${this.isSpotifyConnected});
+                            console.log('  - isLoading:', ${this.isLoading});
+                            console.log('  - showTextPrompt:', ${this.showTextPrompt});
+                        </script>
                         
                         ${this.showMessage ? `
                             <div class="message-container">
@@ -1534,6 +1546,39 @@
                 } else {
                     advancedSettings.style.display = 'none';
                     toggleBtn.textContent = '⚙️ Advanced Settings';
+                }
+                
+                // Ensure button state is updated after toggling
+                this.updateButtonStates();
+            }
+            
+            updateButtonStates() {
+                // Update generate button state
+                const generateBtn = document.getElementById('generatePlaylist');
+                if (generateBtn) {
+                    const isDisabled = !this.selectedMood || !this.isSpotifyConnected || this.isLoading;
+                    generateBtn.disabled = isDisabled;
+                    
+                    if (this.isLoading) {
+                        generateBtn.textContent = '🔄 Generating...';
+                    } else if (!this.isSpotifyConnected) {
+                        generateBtn.textContent = 'Connect Spotify First';
+                    } else if (!this.selectedMood) {
+                        if (this.showTextPrompt && this.userSituation.trim()) {
+                            generateBtn.textContent = 'Analyze Situation First';
+                        } else {
+                            generateBtn.textContent = 'Select a Mood First';
+                        }
+                    } else {
+                        generateBtn.textContent = 'Generate Playlist';
+                    }
+                }
+                
+                // Update analyze button state for text mode
+                const analyzeBtn = document.getElementById('analyzeSituation');
+                if (analyzeBtn) {
+                    const isDisabled = !this.userSituation.trim();
+                    analyzeBtn.disabled = isDisabled;
                 }
             }
             
