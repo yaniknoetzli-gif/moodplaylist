@@ -8,11 +8,94 @@ if (!OPENAI_API_KEY) {
   console.error('Please set OPENAI_API_KEY in your Vercel dashboard');
 }
 
+// Fallback analysis when OpenAI is not available
+function getFallbackAnalysis(situation) {
+  const situationLower = situation.toLowerCase();
+  
+  // Basic mood detection
+  let primaryMood = 'Calm';
+  let energyLevel = 5;
+  let valence = 5;
+  let danceability = 5;
+  let acousticness = 5;
+  let recommendedGenres = ['pop', 'indie'];
+  let artistStyle = 'mainstream';
+  let playlistTheme = 'Personalized Playlist';
+  let reasoning = 'Basic mood analysis based on your description.';
+  
+  // Detect mood based on keywords
+  if (situationLower.includes('sad') || situationLower.includes('depressed') || situationLower.includes('down')) {
+    primaryMood = 'Sad';
+    energyLevel = 3;
+    valence = 2;
+    danceability = 3;
+    acousticness = 7;
+    recommendedGenres = ['indie', 'alternative', 'folk'];
+    artistStyle = 'indie';
+    playlistTheme = 'Healing & Comfort';
+    reasoning = 'Detected sadness in your situation. This playlist will provide comfort and emotional support.';
+  } else if (situationLower.includes('angry') || situationLower.includes('mad') || situationLower.includes('frustrated')) {
+    primaryMood = 'Angry';
+    energyLevel = 8;
+    valence = 3;
+    danceability = 6;
+    acousticness = 3;
+    recommendedGenres = ['rock', 'metal', 'alternative'];
+    artistStyle = 'alternative';
+    playlistTheme = 'Release & Power';
+    reasoning = 'Detected anger or frustration. This playlist will help channel that energy positively.';
+  } else if (situationLower.includes('happy') || situationLower.includes('joy') || situationLower.includes('excited')) {
+    primaryMood = 'Happy';
+    energyLevel = 8;
+    valence = 9;
+    danceability = 9;
+    acousticness = 4;
+    recommendedGenres = ['pop', 'dance', 'electronic'];
+    artistStyle = 'mainstream';
+    playlistTheme = 'Joy & Celebration';
+    reasoning = 'Detected happiness and excitement. This playlist will amplify your positive energy.';
+  } else if (situationLower.includes('workout') || situationLower.includes('gym') || situationLower.includes('exercise')) {
+    primaryMood = 'Energetic';
+    energyLevel = 9;
+    valence = 8;
+    danceability = 8;
+    acousticness = 2;
+    recommendedGenres = ['electronic', 'hip-hop', 'pop'];
+    artistStyle = 'mainstream';
+    playlistTheme = 'Power & Energy';
+    reasoning = 'Detected workout or exercise context. This playlist will fuel your energy and motivation.';
+  } else if (situationLower.includes('love') || situationLower.includes('romantic') || situationLower.includes('date')) {
+    primaryMood = 'Romantic';
+    energyLevel = 6;
+    valence = 8;
+    danceability = 6;
+    acousticness = 6;
+    recommendedGenres = ['pop', 'r&b', 'indie'];
+    artistStyle = 'mainstream';
+    playlistTheme = 'Love & Romance';
+    reasoning = 'Detected romantic context. This playlist will set the perfect mood for love.';
+  }
+  
+  return {
+    primaryMood,
+    secondaryMoods: [],
+    energyLevel,
+    valence,
+    danceability,
+    acousticness,
+    recommendedGenres,
+    artistStyle,
+    playlistTheme,
+    reasoning
+  };
+}
+
 // Function to call OpenAI API for intelligent mood analysis
 async function analyzeSituationWithAI(situation, userProfile = null) {
   return new Promise((resolve, reject) => {
     if (!OPENAI_API_KEY) {
-      reject(new Error('OpenAI API key not configured'));
+      console.log('⚠️ OpenAI API key not configured, using fallback analysis');
+      resolve(getFallbackAnalysis(situation));
       return;
     }
 
@@ -100,7 +183,14 @@ Respond in JSON format:
             resolve(analysis);
           } else {
             console.error('❌ OpenAI API error:', response);
-            reject(new Error(response.error?.message || 'OpenAI API error'));
+            
+            // Handle quota exceeded or other errors with fallback
+            if (response.error?.code === 'insufficient_quota' || response.error?.code === 'model_not_found') {
+              console.log('⚠️ OpenAI API unavailable, using fallback analysis');
+              resolve(getFallbackAnalysis(situation));
+            } else {
+              reject(new Error(response.error?.message || 'OpenAI API error'));
+            }
           }
         } catch (error) {
           console.error('❌ JSON parse error:', error);
@@ -111,7 +201,9 @@ Respond in JSON format:
     });
 
     req.on('error', (error) => {
-      reject(error);
+      console.error('❌ OpenAI request error:', error);
+      console.log('⚠️ Using fallback analysis due to request error');
+      resolve(getFallbackAnalysis(situation));
     });
 
     req.write(requestData);
