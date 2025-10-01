@@ -867,12 +867,6 @@
                                 this.isSpotifyConnected ? '✅ Spotify Connected' : '🎵 Connect to Spotify'}
                         </button>
                         
-                        ${!this.isSpotifyConnected ? `
-                            <button class="spotify-button direct-auth-button" id="directAuth" ${this.isLoading ? 'disabled' : ''}>
-                                🔗 Direct Authentication
-                            </button>
-                        ` : ''}
-                        
                         <button class="generate-button ${(!this.selectedMood || !this.isSpotifyConnected || this.isLoading) ? 'disabled' : ''}" 
                                 id="generatePlaylist" ${(!this.selectedMood || !this.isSpotifyConnected || this.isLoading) ? 'disabled' : ''}>
                             ${this.isLoading ? '🔄 Generating...' :
@@ -961,7 +955,7 @@
                             e.preventDefault();
                             e.stopPropagation();
                             console.log('Connect button clicked!');
-                            this.connectSpotify();
+                            this.connectSpotifyDirect();
                             return;
                         }
                         
@@ -989,12 +983,6 @@
                             return;
                         }
                         
-                        if (e.target.closest('.direct-auth-button') || e.target.id === 'directAuth') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            this.connectSpotifyDirect();
-                            return;
-                        }
                     } catch (error) {
                         console.error('Event handler error:', error);
                     }
@@ -1531,8 +1519,10 @@
                 // Build the authorization URL
                 const authUrl = this.buildAuthUrl();
                 
-                // Redirect directly to Spotify (no popup)
-                window.location.href = authUrl;
+                // Redirect directly to Spotify (no popup, no window.open)
+                setTimeout(() => {
+                    window.location.href = authUrl;
+                }, 500);
             }
         }
 
