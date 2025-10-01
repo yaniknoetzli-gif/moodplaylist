@@ -1173,23 +1173,19 @@
                 
             // Check if the window was blocked
             if (!authWindow || authWindow.closed || typeof authWindow.closed == 'undefined') {
-                this.showMessage = '❌ Popup blocked! Please:\n\n1. Allow popups for this site\n2. Or try opening in a new tab manually\n3. Or use mobile device';
+                this.showMessage = '❌ Popup blocked! Use the "🔗 Direct Authentication" button instead.';
                 this.render();
-                
-                // Add alternative authentication methods
-                setTimeout(() => {
-                    this.showAlternativeAuth(authUrl);
-                }, 2000);
                 return;
             }
             
-            // Add a fallback: if popup is blocked, try opening in same window
+            // Add a fallback: if popup is blocked, show alternative
             setTimeout(() => {
                 if (authWindow.closed) {
-                    console.log('🔄 Popup was blocked, trying fallback...');
-                    this.showAlternativeAuth(authUrl);
+                    console.log('🔄 Popup was blocked, showing alternative...');
+                    this.showMessage = '❌ Popup blocked! Use the "🔗 Direct Authentication" button instead.';
+                    this.render();
                 }
-            }, 1000);
+            }, 2000);
                 
                 this.authWindowInterval = setInterval(() => {
                     if (authWindow.closed) {
@@ -1212,25 +1208,34 @@
             
             async handleSpotifyCallback(code) {
                 try {
+                    this.isLoading = true;
                     this.showMessage = '🎵 Exchanging authorization code for access token...';
                     this.render();
                     
-                    this.showMessage = '✅ Successfully connected to Spotify!\n\nYou can now select a mood and generate your playlist.';
-                    this.render();
+                    const response = await fetch(`${CONFIG.API.BASE_URL}${CONFIG.API.ENDPOINTS.CALLBACK}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ code })
+                    });
                     
-                    setTimeout(() => {
-                        this.showMessage = null;
-                        this.render();
-                        this.attachDirectListeners();
-                    }, 3000);
+                    if (!response.ok) {
+                        throw new Error('Failed to exchange code for token');
+                    }
+                    
+                    const tokenData = await response.json();
+                    this.handleSpotifyTokenData(tokenData);
                     
                 } catch (error) {
                     console.error('Auth error:', error);
+                    this.isLoading = false;
                     this.showMessage = `❌ Authentication failed: ${error.message}\n\nPlease try connecting again.`;
                     this.render();
                     setTimeout(() => {
                         this.showMessage = null;
                         this.render();
+                        this.attachDirectListeners();
                     }, 5000);
                 }
             }
@@ -1490,19 +1495,7 @@
             }
             
             showAlternativeAuth(authUrl) {
-                this.showMessage = `
-                    🔗 Alternative Authentication Methods:
-                    
-                    1. Click this link to authenticate:
-                    ${authUrl}
-                    
-                    2. Or copy this URL and open in a new tab:
-                    ${authUrl}
-                    
-                    3. Or try on mobile device
-                    
-                    After authentication, you'll be redirected back here.
-                `;
+                this.showMessage = '❌ Popup blocked! Use the "🔗 Direct Authentication" button below instead.';
                 this.render();
                 
                 // Add a clickable link
