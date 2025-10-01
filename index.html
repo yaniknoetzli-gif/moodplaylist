@@ -493,6 +493,29 @@
             background: #2c3e50;
             color: #fff;
         }
+        
+        .direct-auth-button {
+            background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .direct-auth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(29, 185, 84, 0.4);
+        }
+        
+        .direct-auth-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
     </style>
 </head>
 <body>
@@ -844,6 +867,12 @@
                                 this.isSpotifyConnected ? '✅ Spotify Connected' : '🎵 Connect to Spotify'}
                         </button>
                         
+                        ${!this.isSpotifyConnected ? `
+                            <button class="spotify-button direct-auth-button" id="directAuth" ${this.isLoading ? 'disabled' : ''}>
+                                🔗 Direct Authentication
+                            </button>
+                        ` : ''}
+                        
                         <button class="generate-button ${(!this.selectedMood || !this.isSpotifyConnected || this.isLoading) ? 'disabled' : ''}" 
                                 id="generatePlaylist" ${(!this.selectedMood || !this.isSpotifyConnected || this.isLoading) ? 'disabled' : ''}>
                             ${this.isLoading ? '🔄 Generating...' :
@@ -957,6 +986,13 @@
                             e.preventDefault();
                             e.stopPropagation();
                             this.toggleAdvancedSettings();
+                            return;
+                        }
+                        
+                        if (e.target.closest('.direct-auth-button') || e.target.id === 'directAuth') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            this.connectSpotifyDirect();
                             return;
                         }
                     } catch (error) {
@@ -1139,6 +1175,11 @@
             if (!authWindow || authWindow.closed || typeof authWindow.closed == 'undefined') {
                 this.showMessage = '❌ Popup blocked! Please:\n\n1. Allow popups for this site\n2. Or try opening in a new tab manually\n3. Or use mobile device';
                 this.render();
+                
+                // Add alternative authentication methods
+                setTimeout(() => {
+                    this.showAlternativeAuth(authUrl);
+                }, 2000);
                 return;
             }
             
@@ -1146,7 +1187,7 @@
             setTimeout(() => {
                 if (authWindow.closed) {
                     console.log('🔄 Popup was blocked, trying fallback...');
-                    window.location.href = authUrl;
+                    this.showAlternativeAuth(authUrl);
                 }
             }, 1000);
                 
@@ -1446,6 +1487,59 @@
                     artistPopularity,
                     genre
                 };
+            }
+            
+            showAlternativeAuth(authUrl) {
+                this.showMessage = `
+                    🔗 Alternative Authentication Methods:
+                    
+                    1. Click this link to authenticate:
+                    ${authUrl}
+                    
+                    2. Or copy this URL and open in a new tab:
+                    ${authUrl}
+                    
+                    3. Or try on mobile device
+                    
+                    After authentication, you'll be redirected back here.
+                `;
+                this.render();
+                
+                // Add a clickable link
+                setTimeout(() => {
+                    const messageContainer = document.querySelector('.message-container');
+                    if (messageContainer) {
+                        const link = document.createElement('a');
+                        link.href = authUrl;
+                        link.target = '_blank';
+                        link.style.cssText = `
+                            display: block;
+                            background: #1db954;
+                            color: white;
+                            padding: 15px;
+                            border-radius: 10px;
+                            text-decoration: none;
+                            margin: 10px 0;
+                            text-align: center;
+                            font-weight: bold;
+                        `;
+                        link.textContent = '🔗 Click here to authenticate with Spotify';
+                        messageContainer.appendChild(link);
+                    }
+                }, 100);
+            }
+            
+            connectSpotifyDirect() {
+                console.log('🔗 Direct authentication initiated');
+                this.isLoading = true;
+                this.showMessage = '🔄 Redirecting to Spotify...';
+                this.render();
+                
+                // Build the authorization URL
+                const authUrl = this.buildAuthUrl();
+                
+                // Redirect directly to Spotify (no popup)
+                window.location.href = authUrl;
             }
         }
 
