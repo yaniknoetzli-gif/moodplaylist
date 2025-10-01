@@ -51,6 +51,19 @@
             margin-bottom: 30px;
         }
         
+        .user-info {
+            margin-top: 1rem;
+        }
+        
+        .user-status {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #fff;
+            display: inline-block;
+        }
+        
         
         .title {
             font-size: 32px;
@@ -806,6 +819,11 @@
                         <div class="header">
                             <h1 class="title">🎵 MoodPlaylist</h1>
                             <p class="subtitle">AI-Powered Music Discovery</p>
+                            ${this.isSpotifyConnected && this.userProfile ? `
+                                <div class="user-info">
+                                    <span class="user-status">✅ Connected as ${this.userProfile.display_name || this.userProfile.id}</span>
+                                </div>
+                            ` : ''}
                         </div>
                         
                         <div class="section">
@@ -901,18 +919,12 @@
                         </button>
                         
                         <button class="generate-button ${(!this.selectedMood || !this.isSpotifyConnected || this.isLoading) ? 'disabled' : ''}" 
-                                id="generatePlaylist" ${(!this.selectedMood || !this.isSpotifyConnected || this.isLoading) ? 'disabled' : ''}>
+                                id="generatePlaylist" ${(!this.selectedMood || !this.isSpotifyConnected || this.isLoading) ? 'disabled' : ''}
+                                style="display: block; margin-top: 1rem;">
                             ${this.isLoading ? '🔄 Generating...' :
                                 !this.isSpotifyConnected ? 'Connect Spotify First' : 
                                 !this.selectedMood ? 'Select a Mood First' : 'Generate Playlist'}
                         </button>
-                        <script>
-                            console.log('🔍 Button State Debug:');
-                            console.log('  - selectedMood:', '${this.selectedMood?.name || 'null'}');
-                            console.log('  - isSpotifyConnected:', ${this.isSpotifyConnected});
-                            console.log('  - isLoading:', ${this.isLoading});
-                            console.log('  - showTextPrompt:', ${this.showTextPrompt});
-                        </script>
                         
                         ${this.showMessage ? `
                             <div class="message-container">
