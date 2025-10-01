@@ -1046,7 +1046,7 @@
                 this.render();
             }
             
-            analyzeSituation() {
+            async analyzeSituation() {
                 if (!this.userSituation.trim()) {
                     this.showMessage = 'Please describe your situation first!';
                     this.render();
@@ -1068,9 +1068,66 @@
                 }
                 
                 this.isLoading = true;
-                this.showMessage = '🤖 Analyzing your situation...\n\nOur AI is understanding your mood and finding the perfect tracks!';
+                this.showMessage = '🤖 AI is analyzing your situation...\n\nUnderstanding your emotions and music preferences...';
                 this.render();
                 
+                try {
+                    // Call OpenAI API for intelligent analysis
+                    const response = await fetch(`${CONFIG.API.BASE_URL}/api/analyze-situation`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            situation: this.userSituation,
+                            userProfile: this.userProfile
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('AI analysis failed');
+                    }
+                    
+                    const data = await response.json();
+                    const analysis = data.analysis;
+                    
+                    console.log('🤖 AI Analysis:', analysis);
+                    
+                    // Store the AI analysis for intelligent playlist creation
+                    this.aiAnalysis = analysis;
+                    
+                    // Find the closest mood from our predefined moods
+                    const moodMap = {
+                        'Happy': 'Happy',
+                        'Sad': 'Sad', 
+                        'Angry': 'Angry',
+                        'Calm': 'Calm',
+                        'Energetic': 'Energetic',
+                        'Romantic': 'Romantic'
+                    };
+                    
+                    const detectedMood = moodMap[analysis.primaryMood] || 'Calm';
+                    this.selectedMood = this.moods.find(m => m.name === detectedMood);
+                    
+                    this.isLoading = false;
+                    this.showMessage = `🎯 AI Detected: ${this.selectedMood.emoji} ${this.selectedMood.name}\n\n${analysis.reasoning}\n\nYou can now adjust advanced settings and generate your intelligent playlist!`;
+                    this.render();
+                    this.attachDirectListeners();
+                    
+                } catch (error) {
+                    console.error('AI analysis error:', error);
+                    this.isLoading = false;
+                    this.showMessage = `❌ AI analysis failed: ${error.message}\n\nFalling back to basic mood detection...`;
+                    this.render();
+                    
+                    // Fallback to basic mood detection
+                    setTimeout(() => {
+                        this.fallbackMoodDetection();
+                    }, 2000);
+                }
+            }
+            
+            fallbackMoodDetection() {
                 const situation = this.userSituation.toLowerCase();
                 let detectedMood = 'Calm';
                 
@@ -1134,12 +1191,9 @@
                 detectedMood = bestMood.charAt(0).toUpperCase() + bestMood.slice(1);
                 this.selectedMood = this.moods.find(m => m.name === detectedMood);
                 
-                setTimeout(() => {
-                    this.isLoading = false;
-                    this.showMessage = `🎯 Detected Mood: ${this.selectedMood.emoji} ${this.selectedMood.name}\n\nYou can now adjust advanced settings and generate your playlist!`;
-                    this.render();
-                    this.attachDirectListeners();
-                }, 2000);
+                this.showMessage = `🎯 Detected Mood: ${this.selectedMood.emoji} ${this.selectedMood.name}\n\nYou can now adjust advanced settings and generate your playlist!`;
+                this.render();
+                this.attachDirectListeners();
             }
             
             async connectSpotify() {
@@ -1306,7 +1360,17 @@
                 
                 try {
                     const advancedSettings = this.getAdvancedSettings();
-                    const playlistData = await this.createRealPlaylist(this.selectedMood, advancedSettings);
+                    
+                    // Use intelligent playlist creation if AI analysis is available
+                    let playlistData;
+                    if (this.aiAnalysis) {
+                        console.log('🤖 Creating intelligent playlist with AI analysis');
+                        playlistData = await this.createIntelligentPlaylist(this.selectedMood, advancedSettings);
+                    } else {
+                        console.log('📊 Creating standard playlist');
+                        playlistData = await this.createRealPlaylist(this.selectedMood, advancedSettings);
+                    }
+                    
                     this.createdPlaylist = playlistData;
                     this.isLoading = false;
                     
@@ -1314,7 +1378,8 @@
                     trackEvent('playlist_created', 'user_interaction', this.selectedMood.name, playlistData.trackCount);
                     console.log('📊 Playlist created successfully:', this.selectedMood.name, playlistData.trackCount, 'tracks');
                     
-                    this.showMessage = `🎵 Your ${this.selectedMood.name} playlist is ready!\n\n✅ Created: "${playlistData.name}"\n• ${playlistData.trackCount} tracks added\n• Saved to your Spotify account\n• Open Spotify to listen!`;
+                    const playlistType = this.aiAnalysis ? 'AI-Intelligent' : 'Standard';
+                    this.showMessage = `🎵 Your ${playlistType} ${this.selectedMood.name} playlist is ready!\n\n✅ Created: "${playlistData.name}"\n• ${playlistData.trackCount} tracks added\n• Saved to your Spotify account\n• Open Spotify to listen!`;
                     this.render();
                     this.attachDirectListeners();
                 } catch (error) {
@@ -1388,6 +1453,30 @@
                         throw error;
                     }
                 }
+            }
+            
+            async createIntelligentPlaylist(mood, advancedSettings) {
+                const response = await fetch(`${CONFIG.API.BASE_URL}/api/create-intelligent-playlist`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.accessToken}`
+                    },
+                    body: JSON.stringify({
+                        userAccessToken: this.accessToken,
+                        userId: this.userProfile.id,
+                        analysis: this.aiAnalysis,
+                        userProfile: this.userProfile,
+                        advancedSettings: advancedSettings
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to create intelligent playlist');
+                }
+                
+                const data = await response.json();
+                return data.playlist;
             }
             
             async sendFeedback() {

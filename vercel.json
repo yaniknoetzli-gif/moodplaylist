@@ -6,6 +6,12 @@
     "api/create-playlist.js": {
       "maxDuration": 30
     },
+    "api/create-intelligent-playlist.js": {
+      "maxDuration": 60
+    },
+    "api/analyze-situation.js": {
+      "maxDuration": 30
+    },
     "api/user-profile.js": {
       "maxDuration": 10
     },
