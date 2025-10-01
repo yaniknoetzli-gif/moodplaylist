@@ -90,13 +90,26 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (req.method !== 'GET') {
+  // Handle both GET (redirect from Spotify) and POST (from frontend)
+  let code, error;
+  
+  if (req.method === 'GET') {
+    // Handle redirect from Spotify
+    code = req.query.code;
+    error = req.query.error;
+  } else if (req.method === 'POST') {
+    // Handle POST request from frontend
+    const body = JSON.parse(req.body || '{}');
+    code = body.code;
+    error = body.error;
+  } else {
     return res.status(405).json({ error: 'Method not allowed' });
   }
-
-  const { code, error } = req.query;
   
   if (error) {
+    if (req.method === 'POST') {
+      return res.status(400).json({ error: error });
+    }
     return res.send(`
       <html>
         <head><title>Spotify Auth Error</title></head>
@@ -123,7 +136,12 @@ export default async function handler(req, res) {
       // Exchange code for access token
       const tokenData = await exchangeCodeForToken(code);
       
-      // Send the token data back to the main app
+      if (req.method === 'POST') {
+        // Return JSON for POST requests (from frontend)
+        return res.json(tokenData);
+      }
+      
+      // Send HTML for GET requests (redirect from Spotify)
       res.send(`
         <html>
           <head><title>Spotify Auth Success</title></head>
@@ -147,6 +165,9 @@ export default async function handler(req, res) {
       `);
     } catch (error) {
       console.error('Token exchange error:', error);
+      if (req.method === 'POST') {
+        return res.status(500).json({ error: error.message });
+      }
       res.send(`
         <html>
           <head><title>Spotify Auth Error</title></head>
@@ -164,6 +185,9 @@ export default async function handler(req, res) {
       `);
     }
   } else {
+    if (req.method === 'POST') {
+      return res.status(400).json({ error: 'No authorization code received' });
+    }
     res.send(`
       <html>
         <head><title>Spotify Auth</title></head>
