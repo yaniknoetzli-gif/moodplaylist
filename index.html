@@ -1131,58 +1131,8 @@
                     return;
                 }
 
-                this.isLoading = true;
-                this.render();
-                
-                const clientId = CONFIG.SPOTIFY.CLIENT_ID;
-                const redirectUri = CONFIG.SPOTIFY.REDIRECT_URI;
-                const scopes = CONFIG.SPOTIFY.SCOPES.join(' ');
-                
-                const authUrl = `https://accounts.spotify.com/authorize?` +
-                    `client_id=${clientId}&` +
-                    `response_type=code&` +
-                    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-                    `scope=${encodeURIComponent(scopes)}&` +
-                    `show_dialog=true`;
-                
-                this.showMessage = '🎵 Opening Spotify authentication...\n\nYou will be redirected to Spotify to authorize the app.';
-                this.render();
-                
-                // Try to open Spotify authentication in a new tab
-                let authWindow;
-                try {
-                    authWindow = window.open(authUrl, '_blank', 'width=500,height=600,scrollbars=yes,resizable=yes,noopener=yes');
-                } catch (error) {
-                    console.error('Failed to open auth window:', error);
-                    this.showMessage = '❌ Failed to open authentication window. Please try again.';
-                    this.render();
-                    return;
-                }
-                
-            // Check if the window was blocked
-            if (!authWindow || authWindow.closed || typeof authWindow.closed == 'undefined') {
-                this.showMessage = '❌ Popup blocked! Use the "🔗 Direct Authentication" button instead.';
-                this.render();
-                return;
-            }
-            
-            // Add a fallback: if popup is blocked, show alternative
-            setTimeout(() => {
-                if (authWindow.closed) {
-                    console.log('🔄 Popup was blocked, showing alternative...');
-                    this.showMessage = '❌ Popup blocked! Use the "🔗 Direct Authentication" button instead.';
-                    this.render();
-                }
-            }, 2000);
-                
-                this.authWindowInterval = setInterval(() => {
-                    if (authWindow.closed) {
-                        clearInterval(this.authWindowInterval);
-                        this.authWindowInterval = null;
-                        this.isLoading = false;
-                        this.render();
-                    }
-                }, 1000);
+                // Use direct authentication (no popup)
+                this.connectSpotifyDirect();
             }
             
             checkForAuthCode() {
@@ -1482,33 +1432,6 @@
                 };
             }
             
-            showAlternativeAuth(authUrl) {
-                this.showMessage = '❌ Popup blocked! Use the "🔗 Direct Authentication" button below instead.';
-                this.render();
-                
-                // Add a clickable link
-                setTimeout(() => {
-                    const messageContainer = document.querySelector('.message-container');
-                    if (messageContainer) {
-                        const link = document.createElement('a');
-                        link.href = authUrl;
-                        link.target = '_blank';
-                        link.style.cssText = `
-                            display: block;
-                            background: #1db954;
-                            color: white;
-                            padding: 15px;
-                            border-radius: 10px;
-                            text-decoration: none;
-                            margin: 10px 0;
-                            text-align: center;
-                            font-weight: bold;
-                        `;
-                        link.textContent = '🔗 Click here to authenticate with Spotify';
-                        messageContainer.appendChild(link);
-                    }
-                }, 100);
-            }
             
             connectSpotifyDirect() {
                 console.log('🔗 Direct authentication initiated');
