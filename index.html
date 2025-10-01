@@ -1440,7 +1440,18 @@
                 this.render();
                 
                 // Build the authorization URL
-                const authUrl = this.buildAuthUrl();
+                const clientId = CONFIG.SPOTIFY.CLIENT_ID;
+                const redirectUri = CONFIG.SPOTIFY.REDIRECT_URI;
+                const scopes = CONFIG.SPOTIFY.SCOPES.join(' ');
+                
+                const authUrl = `https://accounts.spotify.com/authorize?` +
+                    `client_id=${clientId}&` +
+                    `response_type=code&` +
+                    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+                    `scope=${encodeURIComponent(scopes)}&` +
+                    `show_dialog=true`;
+                
+                console.log('Auth URL:', authUrl);
                 
                 // Redirect directly to Spotify (no popup, no window.open)
                 setTimeout(() => {
